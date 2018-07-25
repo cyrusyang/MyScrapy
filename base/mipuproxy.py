@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 from PIL import Image
 from io import BytesIO
-from chapter1 import spyutil
+from base import spyutil
 
 # 从米铺爬取代理
 
