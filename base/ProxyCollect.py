@@ -22,20 +22,26 @@ class ProxyCollect():
             for page in range(1, 3332):
                 print('page :'+str(page)+'============================')
                 url = 'http://www.xicidaili.com/nn/' + str(page)
-                html = self.getHtml(url)
-                soup = BeautifulSoup(html, 'html.parser')
-                trs = soup.find('table', attrs={'id': 'ip_list'}).find_all('tr', attrs={'class': True})
-                for tr in trs:
-                    proxy = {}
-                    tds = tr.find_all('td')
-                    proxy['ip'] = tds[1].text
-                    proxy['port'] = tds[2].text
-                    proxy['http'] = str(tds[5].text).lower()
-                    if self.isAlive(proxy['ip'], proxy['port'], proxy['http']):
-                        print(str(proxy) + ' is alive')
-                        results.append(proxy)
-                    else:
-                        print(str(proxy) + ' no alive')
+                try:
+                    html = self.getHtml(url, proxy={'http': 'http://117.127.0.203:8080'})
+                    print(html)
+                    soup = BeautifulSoup(html, 'html.parser')
+                    trs = soup.find('table', attrs={'id': 'ip_list'}).find_all('tr', attrs={'class': True})
+                    for tr in trs:
+                        proxy = {}
+                        tds = tr.find_all('td')
+                        proxy['ip'] = tds[1].text
+                        proxy['port'] = tds[2].text
+                        proxy['http'] = str(tds[5].text).lower()
+                        if self.isAlive(proxy['ip'], proxy['port'], proxy['http']):
+                            print(str(proxy) + ' is alive')
+                            results.append(proxy)
+                        else:
+                            print(str(proxy) + ' no alive')
+                except:
+                    print(url+'请求失败')
+                    page -= 1
+                    continue
         return results
 
     @staticmethod
@@ -59,12 +65,9 @@ class ProxyCollect():
         """
         user_agent = 'Mozilla/4.0 (compatible; MSIE 5.5; Windows NT)'
         headers = {'User-Agent': user_agent}
-        try:
-            html = requests.get(url, proxies=proxy, headers=headers, timeout=1)
-            html.encoding = 'utf-8'
-            html.raise_for_status()
-        except:
-            return ''
+        html = requests.get(url, proxies=proxy, headers=headers, timeout=1)
+        html.encoding = 'utf-8'
+        html.raise_for_status()
         return html.text
 
 
@@ -72,6 +75,6 @@ if __name__ == '__main__':
     p = ProxyCollect('xici')
     results = p.getProxies()
     # print(p.getHtml('http://ip.chinaz.com/getip.aspx', proxy={'http': '101.236.60.48:8866'}))
-    with open('proxies.tet', 'w') as f:
+    with open('proxies.txt', 'w') as f:
         for r in results:
             f.write(r['http'] + '://' + r['ip'] + ':' + r['port'] + '\n')
